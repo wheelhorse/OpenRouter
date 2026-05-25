@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 修改默认IP
-# sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
+sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
 
 # 更改默认 Shell 为 zsh
 # sed -i 's/\/bin\/ash/\/usr\/bin\/zsh/g' package/base-files/files/etc/passwd
@@ -34,9 +34,9 @@ git clone --depth=1 https://github.com/Jason6111/luci-app-netdata package/luci-a
 
 # 科学上网插件
 git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
-git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall-packages package/openwrt-passwall
-git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall package/luci-app-passwall
-git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall2 package/luci-app-passwall2
+git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-packages package/openwrt-passwall
+git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package/luci-app-passwall
+git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall2 package/luci-app-passwall2
 git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
 
 # Themes
@@ -77,6 +77,14 @@ git_sparse_clone main https://github.com/linkease/istore luci
 git_sparse_clone main https://github.com/haiibo/packages luci-app-onliner
 sed -i '$i uci set nlbwmon.@nlbwmon[0].refresh_interval=2s' package/lean/default-settings/files/zzz-default-settings
 sed -i '$i uci commit nlbwmon' package/lean/default-settings/files/zzz-default-settings
+
+# 添加 getip 脚本到 base-files 并设置 DDNS 默认使用自定义 getip 脚本
+mkdir -p package/base-files/files/usr/bin
+cp -f $GITHUB_WORKSPACE/docker/patches/getip package/base-files/files/usr/bin/getip
+chmod +x package/base-files/files/usr/bin/getip
+sed -i '$i uci set ddns.myddns_ipv4.ip_source=script' package/lean/default-settings/files/zzz-default-settings
+sed -i '$i uci set ddns.myddns_ipv4.ip_script=/usr/bin/getip' package/lean/default-settings/files/zzz-default-settings
+sed -i '$i uci commit ddns' package/lean/default-settings/files/zzz-default-settings
 chmod 755 package/luci-app-onliner/root/usr/share/onliner/setnlbw.sh
 
 # x86 型号只显示 CPU 型号

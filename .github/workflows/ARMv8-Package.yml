@@ -15,7 +15,7 @@ env:
 
 jobs:
   Package:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.event.repository.owner.id == github.event.sender.id || ! github.event.sender.id
     name: Package for ${{ matrix.version }}
     strategy:
@@ -29,7 +29,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@main
+      uses: actions/checkout@v4
 
     - name: Initialization Environment
       env:
@@ -38,7 +38,7 @@ jobs:
         docker rmi $(docker images -q)
         sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
         sudo -E apt-get -y update
-        sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204)
+        sudo -E apt-get -y install $(curl -fsSL https://raw.githubusercontent.com/ophub/amlogic-s9xxx-openwrt/refs/heads/main/make-openwrt/scripts/ubuntu2404-make-openwrt-depends)
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get -y clean
         sudo timedatectl set-timezone "$TZ"
@@ -102,7 +102,7 @@ jobs:
           - 💻 平台架构: armvirt-64
           - ⚽ 固件源码: ${{ env.REPO_URL }}
           - 💝 源码分支: ${{ env.REPO_BRANCH }}
-          - 🌐 默认地址: 192.168.1.1
+          - 🌐 默认地址: 192.168.100.1
           - 🔑 默认密码: password
           ### 🍻 安装与更新
           - 用插件安装: 系统 → 晶晨宝盒 → 安装 OpenWrt → 选择型号 → 安装

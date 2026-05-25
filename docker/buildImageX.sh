@@ -27,6 +27,7 @@ cp -f patches/rc.local "$TMPDIR/etc/" && \
 cp -f patches/99-custom.conf "$TMPDIR/etc/sysctl.d/" && \
 cp -f patches/cpustat "$TMPDIR/usr/bin/" && chmod 755 "$TMPDIR/usr/bin/cpustat" && \
 cp -f patches/getcpu "$TMPDIR/bin/" && chmod 755 "$TMPDIR/bin/getcpu" && \
+cp -f patches/getip "$TMPDIR/usr/bin/" && chmod 755 "$TMPDIR/usr/bin/getip" && \
 cp -f patches/coremark.sh "$TMPDIR/etc/" && chmod 755 "$TMPDIR/etc/coremark.sh"
 cp -f patches/kmod "$TMPDIR/sbin/" && \
       (
