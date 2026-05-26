@@ -41,7 +41,7 @@ git_sparse_clone openwrt-18.06 https://github.com/immortalwrt/luci applications/
 # git_sparse_clone master https://github.com/syb999/openwrt-19.07.1 package/network/services/msd_lite
 
 # 科学上网插件
-#git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
+git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-packages package/openwrt-passwall
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package/luci-app-passwall
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall2 package/luci-app-passwall2
@@ -64,8 +64,8 @@ sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/haiibo/OpenWrt'|g" p
 sed -i "s|ARMv8|ARMv8_PLUS|g" package/luci-app-amlogic/root/etc/config/amlogic
 
 # SmartDNS
-# git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns package/luci-app-smartdns
-# git clone --depth=1 https://github.com/pymumu/openwrt-smartdns package/smartdns
+git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns package/luci-app-smartdns
+git clone --depth=1 https://github.com/pymumu/openwrt-smartdns package/smartdns
 
 # msd_lite
 git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
@@ -132,3 +132,38 @@ find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
+
+# =========================================================
+# Fix Transmission 2.94 compilation error with miniupnpc 2.3
+# =========================================================
+echo "Patching Transmission for miniupnpc 2.3.x compatibility..."
+mkdir -p feeds/packages/net/transmission/patches
+
+cat << "EOF" > feeds/packages/net/transmission/patches/0004-fix-miniupnpc-2.3-compat.patch
+Index: transmission-2.94/libtransmission/upnp.c
+===================================================================
+--- transmission-2.94.orig/libtransmission/upnp.c
++++ transmission-2.94/libtransmission/upnp.c
+@@ -13,6 +13,8 @@
+ #include <assert.h>
+ 
++#include <stddef.h>
++
+ #include <miniupnpc/miniupnpc.h>
+ #include <miniupnpc/upnpcommands.h>
+ #include <miniupnpc/upnperrors.h>
+@@ -219,8 +221,12 @@ tr_upnpPulse (tr_upnp * handle,
+     if (devlist)
+     {
+         FreeUPNPUrls (&handle->urls);
+-        if (UPNP_GetValidIGD (devlist, &handle->urls, &handle->data,
+-                              handle->lanaddr, sizeof (handle->lanaddr)) == 1)
++        if (UPNP_GetValidIGD (devlist, &handle->urls, &handle->data, handle->lanaddr, sizeof (handle->lanaddr)
++#if MINIUPNPC_API_VERSION >= 18
++                              , NULL, 0
++#endif
++                              ) == 1)
+         {
+             tr_logAddInfo (_("Found Internet Gateway Device \"%s\""),
+                            handle->urls.controlURL);
+EOF
