@@ -13,6 +13,7 @@ OPENWRT_PATH="$WORKSPACE_DIR/openwrt"
 ARTIFACTS_DIR="$WORKSPACE_DIR/artifacts"
 export GITHUB_WORKSPACE="${GITHUB_WORKSPACE:-$WORKSPACE_DIR}"
 git config --global http.sslVerify false
+git config --global --add safe.directory "$OPENWRT_PATH"
 
 echo "=========================================="
 echo " Starting Dockerized OpenWrt Build        "
@@ -34,6 +35,13 @@ make defconfig > /dev/null 2>&1
 ./scripts/feeds install -a
 
 echo "=> Loading Custom Configuration..."
+if [ -d "$OPENWRT_PATH/package" ]; then
+    echo "=> Cleaning up custom packages from previous builds..."
+    cd "$OPENWRT_PATH/package"
+    git clean -ffd
+    cd "$OPENWRT_PATH"
+fi
+
 [ -d "$WORKSPACE_DIR/files" ] && cp -r "$WORKSPACE_DIR/files" "$OPENWRT_PATH/files"
 [ -f "$WORKSPACE_DIR/$CONFIG_FILE" ] && cp "$WORKSPACE_DIR/$CONFIG_FILE" "$OPENWRT_PATH/.config"
 
