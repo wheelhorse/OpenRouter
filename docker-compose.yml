@@ -1,0 +1,14 @@
+services:
+  openwrt-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openwrt-builder-2404
+    container_name: openwrt-compile-job
+    # Mount your current native directory into the container's workspace
+    volumes:
+      - ./:/workspace
+    # Ensure it starts in the right directory
+    working_dir: /workspace
+    # The script to run when the container starts
+    command: /bin/bash ./build.sh
