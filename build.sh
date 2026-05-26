@@ -11,6 +11,8 @@ CLASH_KERNEL="amd64"
 WORKSPACE_DIR="$PWD"
 OPENWRT_PATH="$WORKSPACE_DIR/openwrt"
 ARTIFACTS_DIR="$WORKSPACE_DIR/artifacts"
+export GITHUB_WORKSPACE="${GITHUB_WORKSPACE:-$WORKSPACE_DIR}"
+git config --global http.sslVerify false
 
 echo "=========================================="
 echo " Starting Dockerized OpenWrt Build        "

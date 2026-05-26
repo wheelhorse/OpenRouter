@@ -61,13 +61,17 @@ if [ -f $GITHUB_WORKSPACE/images/bg1.gif ]; then
   mkdir -p package/luci-theme-argon/htdocs/luci-static/argon/background/
   cp -f $GITHUB_WORKSPACE/images/bg1.gif package/luci-theme-argon/htdocs/luci-static/argon/background/bg1.gif
   rm -f package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
+elif [ -f $GITHUB_WORKSPACE/images/bg1.webp ]; then
+  mkdir -p package/luci-theme-argon/htdocs/luci-static/argon/background/
+  cp -f $GITHUB_WORKSPACE/images/bg1.webp package/luci-theme-argon/htdocs/luci-static/argon/background/bg1.webp
+  rm -f package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 else
   cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 fi
 
 # 晶晨宝盒
 git_sparse_clone main https://github.com/ophub/luci-app-amlogic luci-app-amlogic
-sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/haiibo/OpenWrt'|g" package/luci-app-amlogic/root/etc/config/amlogic
+sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/wheelhorse/OpenRouter'|g" package/luci-app-amlogic/root/etc/config/amlogic
 # sed -i "s|kernel_path.*|kernel_path 'https://github.com/ophub/kernel'|g" package/luci-app-amlogic/root/etc/config/amlogic
 sed -i "s|ARMv8|ARMv8_PLUS|g" package/luci-app-amlogic/root/etc/config/amlogic
 

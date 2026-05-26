@@ -10,5 +10,13 @@ services:
       - ./:/workspace
     # Ensure it starts in the right directory
     working_dir: /workspace
+    # Use host network to inherit proxy/DNS configuration from the host
+    network_mode: "host"
+    # Forward host proxy environment variables
+    environment:
+      - http_proxy
+      - https_proxy
+      - all_proxy
+      - no_proxy
     # The script to run when the container starts
     command: /bin/bash ./build.sh
