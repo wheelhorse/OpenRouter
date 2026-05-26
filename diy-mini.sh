@@ -13,6 +13,7 @@ sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_gener
 rm -rf feeds/packages/net/mosdns
 rm -rf feeds/packages/net/msd_lite
 # rm -rf feeds/packages/net/smartdns
+rm -rf feeds/packages/net/open-app-filter
 rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf feeds/luci/applications/luci-app-mosdns
 rm -rf feeds/luci/applications/luci-app-netdata
@@ -34,6 +35,7 @@ git clone --depth=1 https://github.com/Jason6111/luci-app-netdata package/luci-a
 
 # 科学上网插件
 git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
+[ -f package/luci-app-ssr-plus/luci-app-ssr-plus/Makefile ] && sed -i '/libustream-mbedtls||/d' package/luci-app-ssr-plus/luci-app-ssr-plus/Makefile
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-packages package/openwrt-passwall
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package/luci-app-passwall
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall2 package/luci-app-passwall2
@@ -47,7 +49,13 @@ git clone --depth=1 https://github.com/xiaoqingfengATGH/luci-theme-infinityfreed
 git_sparse_clone main https://github.com/haiibo/packages luci-theme-opentomcat
 
 # 更改 Argon 主题背景
-cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
+if [ -f $GITHUB_WORKSPACE/images/bg1.gif ]; then
+  mkdir -p package/luci-theme-argon/htdocs/luci-static/argon/background/
+  cp -f $GITHUB_WORKSPACE/images/bg1.gif package/luci-theme-argon/htdocs/luci-static/argon/background/bg1.gif
+  rm -f package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
+else
+  cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
+fi
 
 # 晶晨宝盒
 git_sparse_clone main https://github.com/ophub/luci-app-amlogic luci-app-amlogic
