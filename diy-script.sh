@@ -1,5 +1,25 @@
 #!/bin/bash
 
+# git clone retry wrapper
+git() {
+  if [ "$1" = "clone" ]; then
+    shift
+    local max_retries=5
+    local count=0
+    until command git clone "$@"; do
+      count=$((count + 1))
+      if [ $count -ge $max_retries ]; then
+        echo "Failed to clone after $max_retries attempts: git clone $@"
+        return 1
+      fi
+      echo "Clone failed, retrying in 3 seconds ($count/$max_retries)..."
+      sleep 3
+    done
+  else
+    command git "$@"
+  fi
+}
+
 # 修改默认IP
 sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
 
@@ -23,11 +43,37 @@ rm -rf feeds/luci/applications/luci-app-serverchan
 # Git稀疏克隆，只克隆指定目录到本地
 function git_sparse_clone() {
   branch="$1" repourl="$2" && shift 2
-  git clone --depth=1 -b $branch --single-branch --filter=blob:none --sparse $repourl
+  local repodir
   repodir=$(echo $repourl | awk -F '/' '{print $(NF)}')
-  cd $repodir && git sparse-checkout set $@
-  mv -f $@ ../package
-  cd .. && rm -rf $repodir
+  local max_retries=5
+  local count=0
+  
+  while [ $count -lt $max_retries ]; do
+    rm -rf "$repodir"
+    if git clone --depth=1 -b $branch --single-branch --filter=blob:none --sparse $repourl; then
+      if cd "$repodir" && git sparse-checkout set "$@"; then
+        local all_exist=true
+        for item in "$@"; do
+          if [ ! -e "$item" ]; then
+            all_exist=false
+            break
+          fi
+        done
+        if [ "$all_exist" = "true" ]; then
+          mv -f "$@" ../package
+          cd ..
+          rm -rf "$repodir"
+          return 0
+        fi
+      fi
+      cd ..
+    fi
+    count=$((count + 1))
+    echo "Sparse clone or checkout failed, retrying in 3 seconds ($count/$max_retries)..."
+    sleep 3
+  done
+  echo "Failed sparse clone of $repourl after $max_retries attempts"
+  return 1
 }
 
 # 添加额外插件
@@ -145,37 +191,4 @@ find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# =========================================================
-# Fix Transmission 2.94 compilation error with miniupnpc 2.3
-# =========================================================
-echo "Patching Transmission for miniupnpc 2.3.x compatibility..."
-mkdir -p feeds/packages/net/transmission/patches
 
-cat << "EOF" > feeds/packages/net/transmission/patches/0004-fix-miniupnpc-2.3-compat.patch
-Index: transmission-2.94/libtransmission/upnp.c
-===================================================================
---- transmission-2.94.orig/libtransmission/upnp.c
-+++ transmission-2.94/libtransmission/upnp.c
-@@ -13,6 +13,8 @@
- #include <assert.h>
- 
-+#include <stddef.h>
-+
- #include <miniupnpc/miniupnpc.h>
- #include <miniupnpc/upnpcommands.h>
- #include <miniupnpc/upnperrors.h>
-@@ -219,8 +221,12 @@ tr_upnpPulse (tr_upnp * handle,
-     if (devlist)
-     {
-         FreeUPNPUrls (&handle->urls);
--        if (UPNP_GetValidIGD (devlist, &handle->urls, &handle->data,
--                              handle->lanaddr, sizeof (handle->lanaddr)) == 1)
-+        if (UPNP_GetValidIGD (devlist, &handle->urls, &handle->data, handle->lanaddr, sizeof (handle->lanaddr)
-+#if MINIUPNPC_API_VERSION >= 18
-+                              , NULL, 0
-+#endif
-+                              ) == 1)
-         {
-             tr_logAddInfo (_("Found Internet Gateway Device \"%s\""),
-                            handle->urls.controlURL);
-EOF

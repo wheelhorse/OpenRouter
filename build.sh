@@ -55,6 +55,7 @@ chmod +x "$WORKSPACE_DIR/$DIY_SCRIPT"
 [ -f "$WORKSPACE_DIR/scripts/preset-adguard-core.sh" ] && "$WORKSPACE_DIR/scripts/preset-adguard-core.sh" $CLASH_KERNEL
 
 echo "=> Downloading Packages..."
+rm -rf tmp
 make defconfig
 make download -j8
 
@@ -64,7 +65,8 @@ mkdir -p files/etc/uci-defaults
 
 # Attempt multi-thread, fallback to single-thread with verbose logging on failure
 set +e
-make -j$(nproc) V=sc || make -j1 || make -j1 V=s
+#make -j$(nproc) V=sc || make -j1 || make -j1 V=s
+make -j1 V=sc 
 BUILD_STATUS=$?
 set -e
 
