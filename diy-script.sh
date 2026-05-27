@@ -4,6 +4,11 @@
 git() {
   if [ "$1" = "clone" ]; then
     shift
+    local last_arg="${@: -1}"
+    if [[ ! "$last_arg" =~ ^- ]] && [[ ! "$last_arg" =~ ^https?:// ]] && [[ ! "$last_arg" =~ ^git@ ]] && [ -d "$last_arg" ]; then
+      echo "=> Destination path '$last_arg' already exists. Skipping clone."
+      return 0
+    fi
     local max_retries=5
     local count=0
     until command git clone "$@"; do
