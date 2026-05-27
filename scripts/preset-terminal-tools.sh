@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Detect workspace root directory
+WORKSPACE_DIR="${GITHUB_WORKSPACE:-$(pwd)/..}"
+
 mkdir -p files/root
 pushd files/root
 
@@ -20,6 +23,11 @@ if [ ! -d "./.oh-my-zsh/custom/plugins/zsh-completions" ]; then
 fi
 
 # Get .zshrc dotfile
-cp -f $GITHUB_WORKSPACE/scripts/.zshrc .
+if [ -f "$WORKSPACE_DIR/scripts/.zshrc" ]; then
+    cp "$WORKSPACE_DIR/scripts/.zshrc" .
+else
+    echo "Warning: .zshrc template not found at $WORKSPACE_DIR/scripts/.zshrc"
+fi
 
 popd
+
