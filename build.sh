@@ -61,14 +61,6 @@ make defconfig
 ./scripts/feeds install rust || true
 make download -j8
 
-# ====================================================================
-# HOTFIX: Patch Transmission (Base64 to preserve strict whitespace)
-# ====================================================================
-echo "=> Applying Transmission miniupnpc compatibility patch..."
-mkdir -p feeds/packages/net/transmission/patches/
-
-echo "LS0tIGEvbGlidHJhbnNtaXNzaW9uL3VwbnAuYworKysgYi9saWJ0cmFuc21pc3Npb24vdXBucC5jCkBAIC0xMiw0ICsxMiw1IEBACiAjaW5jbHVkZSA8YXNzZXJ0Lmg+CiAKKyNpbmNsdWRlIDxzdGRkZWYuaD4KICNpbmNsdWRlIDxtaW5pdXBucGMvbWluaXVwbnBjLmg+CiAjaW5jbHVkZSA8bWluaXVwbnBjL3VwbnBjb21tYW5kcy5oPgpAQCAtMjE5LDQgKzIyMCw3IEBACiAgICAgaWYgKGRldmxpc3QpCiAgICAgewogICAgICAgICBGcmVlVVBOUFVybHMgKCZoYW5kbGUtPnVybHMpOwotICAgICAgICBpZiAoVVBOUF9HZXRWYWxpZElHRCAoZGV2bGlzdCwgJmhhbmRsZS0+dXJscywgJmhhbmRsZS0+ZGF0YSwKLSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGhhbmRsZS0+bGFuYWRkciwgc2l6ZW9mIChoYW5kbGUtPmxhbmFkZHIpKSA9PSAxKQorICAgICAgICBpZiAoVVBOUF9HZXRWYWxpZElHRCAoZGV2bGlzdCwgJmhhbmRsZS0+dXJscywgJmhhbmRsZS0+ZGF0YSwgaGFuZGxlLT5sYW5hZGRyLCBzaXplb2YgKGhhbmRsZS0+bGFuYWRkcikKKyNpZiBNSU5JVVBOUENfQVBJX1ZFUlNJT04gPj0gMTgKKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICwgTlVMTCwgMAorI2VuZGlmCisgICAgICAgICAgICAgICAgICAgICAgICAgICAgICApID09IDEpCiAgICAgICAgIHsKICAgICAgICAgICAgIHRyX2xvZ0FkZEluZm8gKF8oIkZvdW5kIEludGVybmV0IEdhdGV3YXkgRGV2aWNlIFwiJXNcIiIpLA==" | base64 -d > feeds/packages/net/transmission/patches/0004-fix-miniupnpc-2.3-compat.patch
-# ====================================================================
 
 echo "=> Compiling Firmware with $(nproc) threads..."
 mkdir -p files/etc/uci-defaults

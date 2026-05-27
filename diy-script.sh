@@ -171,6 +171,11 @@ sed -i "s/${orig_version}/R${date_version} by Haiibo/g" package/lean/default-set
 # 修复 hostapd 报错
 cp -f $GITHUB_WORKSPACE/scripts/011-fix-mbo-modules-build.patch package/network/services/hostapd/patches/011-fix-mbo-modules-build.patch
 
+# 修复 transmission miniupnpc 报错
+mkdir -p feeds/packages/net/transmission/patches
+cp -f $GITHUB_WORKSPACE/scripts/0004-fix-miniupnpc-2.3-compat.patch feeds/packages/net/transmission/patches/0004-fix-miniupnpc-2.3-compat.patch
+
+
 # 修复 armv8 设备 xfsprogs 报错
 sed -i 's/TARGET_CFLAGS.*/TARGET_CFLAGS += -DHAVE_MAP_SYNC -D_LARGEFILE64_SOURCE/g' feeds/packages/utils/xfsprogs/Makefile
 
