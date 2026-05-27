@@ -180,6 +180,9 @@ cp -f $GITHUB_WORKSPACE/scripts/011-fix-mbo-modules-build.patch package/network/
 mkdir -p feeds/packages/net/transmission/patches
 cp -f $GITHUB_WORKSPACE/scripts/0004-fix-miniupnpc-2.3-compat.patch feeds/packages/net/transmission/patches/0004-fix-miniupnpc-2.3-compat.patch
 
+# 修复 samba4 与 autosamba 冲突的 20-smb 热插拔脚本重复问题
+[ -f feeds/packages/net/samba4/Makefile ] && sed -i '/etc\/hotplug\.d\/block/d' feeds/packages/net/samba4/Makefile
+[ -f package/network/services/samba36/Makefile ] && sed -i '/etc\/hotplug\.d\/block/d' package/network/services/samba36/Makefile
 
 # 修复 armv8 设备 xfsprogs 报错
 sed -i 's/TARGET_CFLAGS.*/TARGET_CFLAGS += -DHAVE_MAP_SYNC -D_LARGEFILE64_SOURCE/g' feeds/packages/utils/xfsprogs/Makefile
