@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - USER_UID=${UID:-1000}
+        - USER_GID=${GID:-1000}
     image: openwrt-builder-2404
     container_name: openwrt-compile-job
     # Mount your current native directory into the container's workspace

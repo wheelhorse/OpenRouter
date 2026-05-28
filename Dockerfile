@@ -23,11 +23,17 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Ubuntu 24.04 already has a user with UID 1000 named 'ubuntu'.
-# We rename it to 'builder' and grant passwordless sudo.
-RUN usermod -l builder ubuntu && \
+# We rename it to 'builder', update its UID/GID to match the host user, and grant passwordless sudo.
+ARG USER_UID=1000
+ARG USER_GID=1000
+RUN groupmod -g ${USER_GID} ubuntu || true && \
+    usermod -u ${USER_UID} -g ${USER_GID} ubuntu && \
+    usermod -l builder ubuntu && \
     groupmod -n builder ubuntu && \
     usermod -d /home/builder -m builder && \
+    chown -R builder:builder /home/builder && \
     echo "builder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
 
 # Switch to the new user and set the working directory
 USER builder

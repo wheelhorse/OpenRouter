@@ -151,23 +151,29 @@ git_sparse_clone main https://github.com/linkease/istore luci
 
 # 在线用户
 git_sparse_clone main https://github.com/haiibo/packages luci-app-onliner
-sed -i '$i uci set nlbwmon.@nlbwmon[0].refresh_interval=2s' package/lean/default-settings/files/zzz-default-settings
-sed -i '$i uci commit nlbwmon' package/lean/default-settings/files/zzz-default-settings
+if ! grep -q "nlbwmon.@nlbwmon" package/lean/default-settings/files/zzz-default-settings; then
+  sed -i '$i uci set nlbwmon.@nlbwmon[0].refresh_interval=2s' package/lean/default-settings/files/zzz-default-settings
+  sed -i '$i uci commit nlbwmon' package/lean/default-settings/files/zzz-default-settings
+fi
 
 # 添加 getip 脚本到 base-files 并设置 DDNS 默认使用自定义 getip 脚本
 mkdir -p package/base-files/files/usr/bin
 cp -f $GITHUB_WORKSPACE/docker/patches/getip package/base-files/files/usr/bin/getip
 chmod +x package/base-files/files/usr/bin/getip
-sed -i '$i uci set ddns.myddns_ipv4.ip_source=script' package/lean/default-settings/files/zzz-default-settings
-sed -i '$i uci set ddns.myddns_ipv4.ip_script=/usr/bin/getip' package/lean/default-settings/files/zzz-default-settings
-sed -i '$i uci commit ddns' package/lean/default-settings/files/zzz-default-settings
+if ! grep -q "ddns.myddns_ipv4" package/lean/default-settings/files/zzz-default-settings; then
+  sed -i '$i uci set ddns.myddns_ipv4.ip_source=script' package/lean/default-settings/files/zzz-default-settings
+  sed -i '$i uci set ddns.myddns_ipv4.ip_script=/usr/bin/getip' package/lean/default-settings/files/zzz-default-settings
+  sed -i '$i uci commit ddns' package/lean/default-settings/files/zzz-default-settings
+fi
 chmod 755 package/luci-app-onliner/root/usr/share/onliner/setnlbw.sh
 
 # x86 型号只显示 CPU 型号
 sed -i 's/${g}.*/${a}${b}${c}${d}${e}${f}${hydrid}/g' package/lean/autocore/files/x86/autocore
 
 # 修改本地时间格式
-sed -i 's/os.date()/os.date("%a %Y-%m-%d %H:%M:%S")/g' package/lean/autocore/files/*/index.htm
+if ! grep -q "os.date(\"%a" package/lean/autocore/files/x86/index.htm; then
+  sed -i 's/os.date()/os.date("%a %Y-%m-%d %H:%M:%S")/g' package/lean/autocore/files/*/index.htm
+fi
 
 # 修改版本为编译日期
 date_version=$(date +"%y.%m.%d")
@@ -177,8 +183,8 @@ sed -i "s/${orig_version}/R${date_version} by Haiibo/g" package/lean/default-set
 # 修复 hostapd 报错
 cp -f $GITHUB_WORKSPACE/scripts/011-fix-mbo-modules-build.patch package/network/services/hostapd/patches/011-fix-mbo-modules-build.patch
 
-# 修复 samba4 与 autosamba 冲突的 20-smb 热插拔脚本重复问题
-[ -f package/network/services/samba36/Makefile ] && sed -i '/etc\/hotplug\.d\/block/d' package/network/services/samba36/Makefile
+# 修复 samba4 与 autosamba 冲突的 20-smb 热插拔脚本重复问题 (通过彻底移除冗余的 autosamba 软件包来解决，只保留 samba4 的 20-smb)
+rm -rf package/lean/autosamba
 
 # 修改 Makefile
 find package/*/ -maxdepth 2 -path "*/Makefile" | xargs -i sed -i 's/..\/..\/luci.mk/$(TOPDIR)\/feeds\/luci\/luci.mk/g' {}
@@ -191,17 +197,21 @@ find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/
 
 # 调整 V2ray服务器 到 VPN 菜单
 # sed -i 's/services/vpn/g' feeds/luci/applications/luci-app-v2ray-server/luasrc/controller/*.lua
-# sed -i 's/services/vpn/g' feeds/luci/applications/luci-app-v2ray-server/luasrc/model/cbi/v2ray_server/*.lua
+# sed -i 's/services/vpn/g' feeds/luci/applications/luci-app-v2ray-server/luasrc/model/cbi/v2ray_server/*.lua/
 # sed -i 's/services/vpn/g' feeds/luci/applications/luci-app-v2ray-server/luasrc/view/v2ray_server/*.htm
 
 # Update all feeds
 ./scripts/feeds update -a
 
-# Remove duplicate packages from feeds
-rm -rf feeds/packages/net/adguardhome
+# Remove duplicate packages from feeds (only delete Luci GUI apps, keep core daemons to avoid unresolved dependency issues)
+rm -rf feeds/luci/applications/luci-app-adguardhome
+rm -rf feeds/luci/applications/luci-app-openclash
+rm -rf feeds/luci/applications/luci-app-filebrowser
+rm -rf feeds/luci/applications/luci-app-msd_lite
+rm -rf feeds/luci/applications/luci-app-argon-config
+rm -rf feeds/luci/applications/luci-app-eqos
 rm -rf feeds/packages/net/mosdns
 rm -rf feeds/packages/net/msd_lite
-# rm -rf feeds/packages/net/smartdns
 rm -rf feeds/packages/net/open-app-filter
 rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf feeds/luci/themes/luci-theme-netgear
@@ -215,9 +225,6 @@ rm -rf feeds/luci/applications/luci-app-serverchan
 # 修复 transmission miniupnpc 报错
 mkdir -p feeds/packages/net/transmission/patches
 cp -f $GITHUB_WORKSPACE/scripts/0004-fix-miniupnpc-2.3-compat.patch feeds/packages/net/transmission/patches/0004-fix-miniupnpc-2.3-compat.patch
-
-# 修复 samba4 与 autosamba 冲突的 20-smb 热插拔脚本重复问题
-[ -f feeds/packages/net/samba4/Makefile ] && sed -i '/etc\/hotplug\.d\/block/d' feeds/packages/net/samba4/Makefile
 
 # 修复 armv8 设备 xfsprogs 报错
 sed -i 's/TARGET_CFLAGS.*/TARGET_CFLAGS += -DHAVE_MAP_SYNC -D_LARGEFILE64_SOURCE/g' feeds/packages/utils/xfsprogs/Makefile
