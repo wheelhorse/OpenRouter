@@ -177,16 +177,8 @@ sed -i "s/${orig_version}/R${date_version} by Haiibo/g" package/lean/default-set
 # 修复 hostapd 报错
 cp -f $GITHUB_WORKSPACE/scripts/011-fix-mbo-modules-build.patch package/network/services/hostapd/patches/011-fix-mbo-modules-build.patch
 
-# 修复 transmission miniupnpc 报错
-mkdir -p feeds/packages/net/transmission/patches
-cp -f $GITHUB_WORKSPACE/scripts/0004-fix-miniupnpc-2.3-compat.patch feeds/packages/net/transmission/patches/0004-fix-miniupnpc-2.3-compat.patch
-
 # 修复 samba4 与 autosamba 冲突的 20-smb 热插拔脚本重复问题
-[ -f feeds/packages/net/samba4/Makefile ] && sed -i '/etc\/hotplug\.d\/block/d' feeds/packages/net/samba4/Makefile
 [ -f package/network/services/samba36/Makefile ] && sed -i '/etc\/hotplug\.d\/block/d' package/network/services/samba36/Makefile
-
-# 修复 armv8 设备 xfsprogs 报错
-sed -i 's/TARGET_CFLAGS.*/TARGET_CFLAGS += -DHAVE_MAP_SYNC -D_LARGEFILE64_SOURCE/g' feeds/packages/utils/xfsprogs/Makefile
 
 # 修改 Makefile
 find package/*/ -maxdepth 2 -path "*/Makefile" | xargs -i sed -i 's/..\/..\/luci.mk/$(TOPDIR)\/feeds\/luci\/luci.mk/g' {}
@@ -202,7 +194,32 @@ find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/
 # sed -i 's/services/vpn/g' feeds/luci/applications/luci-app-v2ray-server/luasrc/model/cbi/v2ray_server/*.lua
 # sed -i 's/services/vpn/g' feeds/luci/applications/luci-app-v2ray-server/luasrc/view/v2ray_server/*.htm
 
+# Update all feeds
 ./scripts/feeds update -a
+
+# Remove duplicate packages from feeds
+rm -rf feeds/packages/net/adguardhome
+rm -rf feeds/packages/net/mosdns
+rm -rf feeds/packages/net/msd_lite
+# rm -rf feeds/packages/net/smartdns
+rm -rf feeds/packages/net/open-app-filter
+rm -rf feeds/luci/themes/luci-theme-argon
+rm -rf feeds/luci/themes/luci-theme-netgear
+rm -rf feeds/luci/applications/luci-app-mosdns
+rm -rf feeds/luci/applications/luci-app-netdata
+rm -rf feeds/luci/applications/luci-app-serverchan
+
+# Install all feeds
 ./scripts/feeds install -a
+
+# 修复 transmission miniupnpc 报错
+mkdir -p feeds/packages/net/transmission/patches
+cp -f $GITHUB_WORKSPACE/scripts/0004-fix-miniupnpc-2.3-compat.patch feeds/packages/net/transmission/patches/0004-fix-miniupnpc-2.3-compat.patch
+
+# 修复 samba4 与 autosamba 冲突的 20-smb 热插拔脚本重复问题
+[ -f feeds/packages/net/samba4/Makefile ] && sed -i '/etc\/hotplug\.d\/block/d' feeds/packages/net/samba4/Makefile
+
+# 修复 armv8 设备 xfsprogs 报错
+sed -i 's/TARGET_CFLAGS.*/TARGET_CFLAGS += -DHAVE_MAP_SYNC -D_LARGEFILE64_SOURCE/g' feeds/packages/utils/xfsprogs/Makefile
 
 
