@@ -10,6 +10,7 @@ sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_gener
 # sed -i 's|/bin/login|/bin/login -f root|g' feeds/packages/utils/ttyd/files/ttyd.config
 
 # 移除要替换的包
+rm -rf feeds/packages/net/adguardhome
 rm -rf feeds/packages/net/mosdns
 rm -rf feeds/packages/net/msd_lite
 # rm -rf feeds/packages/net/smartdns
