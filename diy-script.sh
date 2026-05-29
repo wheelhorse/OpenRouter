@@ -96,6 +96,9 @@ git_sparse_clone master https://github.com/immortalwrt/luci applications/luci-ap
 # 科学上网插件
 git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
 [ -f package/luci-app-ssr-plus/luci-app-ssr-plus/Makefile ] && sed -i '/libustream-mbedtls||/d' package/luci-app-ssr-plus/luci-app-ssr-plus/Makefile
+if [ -f package/luci-app-ssr-plus/gn/Makefile ]; then
+  sed -i 's|$(PYTHON) $(HOST_BUILD_DIR)/build/gen.py|sed -i "s/-Werror//g" $(HOST_BUILD_DIR)/build/gen.py\n\t$(PYTHON) $(HOST_BUILD_DIR)/build/gen.py|g' package/luci-app-ssr-plus/gn/Makefile
+fi
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-packages package/openwrt-passwall
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package/luci-app-passwall
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall2 package/luci-app-passwall2
